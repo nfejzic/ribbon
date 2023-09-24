@@ -1,0 +1,12 @@
+[package]
+name = "ribbon"
+version = "0.1.0"
+edition = "2021"
+authors = ["Nadir Fejzic <nadirfejzo@gmail.com>"]
+description = "Tape machine for peeking through windows of iterators."
+repository = "https://github.com/nfejzic/ribbon"
+license = "Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
