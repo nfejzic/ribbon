@@ -1,3 +1,7 @@
+[![Build](https://github.com/nfejzic/ribbon/actions/workflows/build.yml/badge.svg)](https://github.com/nfejzic/ribbon/actions/workflows/build.yml)
+[![CI](https://github.com/nfejzic/ribbon/actions/workflows/ci.yml/badge.svg)](https://github.com/nfejzic/ribbon/actions/workflows/ci.yml)
+[![Documentation](https://github.com/nfejzic/ribbon/actions/workflows/docs.yml/badge.svg)](https://github.com/nfejzic/ribbon/actions/workflows/docs.yml)
+
 # Ribbon - tape for Iterators
 
 `Ribbon` is meant to provide API for holding (and thus making available) some
