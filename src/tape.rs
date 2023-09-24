@@ -1,7 +1,11 @@
 use std::collections::VecDeque;
 
-/// A tape is a data structure that can be expanded by pulling items from an iterator, and provides
-/// a way to access some dynamic number of items produced by the iterator at the same time.
+/// A dynamically sized [`Ribbon`] that can hold varying number of items and can grow and shrink as
+/// necessary. It is backed up by a [`VecDeque`], and allocates memory on the heap (as is customary by
+/// dynamically sized collections)
+///
+/// [`VecDeque`]: std::collections::VecDeque
+/// [`Ribbon`]: crate::Ribbon
 #[derive(Debug)]
 pub struct Tape<I, T> {
     iter: I,
@@ -25,10 +29,12 @@ impl<I, T> super::ribbon::Ribbon<T> for Tape<I, T>
 where
     I: Iterator<Item = T>,
 {
-    fn expand(&mut self) {
+    fn progress(&mut self) -> Option<T> {
         if let Some(item) = self.iter.next() {
             self.tape.push_back(item);
         }
+
+        None
     }
 
     fn pop_front(&mut self) -> Option<T> {
