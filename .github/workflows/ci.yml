@@ -28,3 +28,6 @@ jobs:
 
       - name: Run rustfmt
         run: cargo fmt -- --check
+
+      - name: Build Documentation
+        run: cargo doc --workspace --no-deps
