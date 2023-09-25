@@ -1,6 +1,7 @@
-[![Build](https://github.com/nfejzic/ribbon/actions/workflows/build.yml/badge.svg)](https://github.com/nfejzic/ribbon/actions/workflows/build.yml)
-[![CI](https://github.com/nfejzic/ribbon/actions/workflows/ci.yml/badge.svg)](https://github.com/nfejzic/ribbon/actions/workflows/ci.yml)
-[![Documentation](https://github.com/nfejzic/ribbon/actions/workflows/docs.yml/badge.svg)](https://github.com/nfejzic/ribbon/actions/workflows/docs.yml)
+[![Build](https://img.shields.io/github/actions/workflow/status/nfejzic/ribbon/build.yml?logo=github&label=Build)](https://github.com/nfejzic/ribbon/actions/workflows/build.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/nfejzic/ribbon/ci.yml?logo=github&label=CI)](https://github.com/nfejzic/ribbon/actions/workflows/ci.yml)
+[![Documentation](https://img.shields.io/docsrs/ribbon?logo=docs.rs&label=Docs)](https://docs.rs/ribbon/latest/ribbon/)
+[![Crates](https://img.shields.io/crates/v/ribbon?logo=rust)](https://crates.io/crates/ribbon)
 
 # Ribbon - tape for Iterators
 
