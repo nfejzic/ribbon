@@ -1,3 +1,5 @@
+//! Implementation of statically sized data structures that implement the [`Ribbon`] trait.
+
 use crate::{ribbon, Ribbon};
 
 /// A fix-sized [`Ribbon`] backed up by an array of `N` elements. It cannot grow over the given fixed
@@ -21,7 +23,7 @@ impl<const LEN: usize, I, T> Band<LEN, I, T> {
         Band { iter, tape }
     }
 
-    /// Shifts all items by 1, overwriting the first item in the `Band`.
+    /// Shifts all items by 1, returning the head of the `Band`.
     fn slide(&mut self) -> Option<T> {
         let first = self.tape[0].take();
 
@@ -46,19 +48,21 @@ where
     I: Iterator<Item = T>,
 {
     fn progress(&mut self) -> Option<T> {
-        let next = self.iter.next()?;
+        let next = self.iter.next()?; // do nothing if iterator does not produce
 
-        let first = self.is_full().then(|| self.slide()).flatten();
-
+        let head = self.slide();
         self.tape[self.len()] = Some(next);
-        first
+        head
     }
 
-    /// Expands the `Ribbon` by consuming the next available item and appending it to the end.
+    /// Expands the `Band` by consuming the next available item and appending it to the end.
     /// Drops the first element if the `Band` is already at full capacity.
     fn expand(&mut self) {
-        let to_drop = self.progress();
-        drop(to_drop);
+        if self.is_full() {
+            self.slide();
+        } else {
+            self.tape[self.len()] = self.iter.next();
+        }
     }
 
     fn pop_front(&mut self) -> Option<T> {
@@ -181,26 +185,19 @@ mod tests {
 
     #[test]
     fn makes_progress() {
-        let mut band: Band<5, _, _> = Band::new(0u32..10u32);
+        let mut band: Band<5, _, _> = Band::new(0u32..5u32);
 
-        // Band does not need more capacity, nothing returned
+        // band was empty, first progress has nothing to return
         assert_eq!(band.progress(), None);
-        assert_eq!(band.progress(), None);
-        assert_eq!(band.progress(), None);
-        assert_eq!(band.progress(), None);
-        assert_eq!(band.progress(), None);
-        dbg!(&band);
 
-        // Band now full, needs capacity so drops first item
+        // progresses 1 by 1 item, this can be observed as simple pass-through of the underlying
+        // iterator
         assert_eq!(band.progress(), Some(0));
         assert_eq!(band.progress(), Some(1));
         assert_eq!(band.progress(), Some(2));
         assert_eq!(band.progress(), Some(3));
-        assert_eq!(band.progress(), Some(4));
 
-        // iterator stops producing more values, progress is a no-op. This means no extra capacity
-        // is needed, hence nothing is returned
-        assert_eq!(band.progress(), None);
+        // iterator does not produce more values, so progress does not drop anything
         assert_eq!(band.progress(), None);
     }
 }

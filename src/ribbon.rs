@@ -1,11 +1,9 @@
 pub trait Ribbon<T> {
-    /// Tries to move `Ribbon` forward through the iterator without expanding itself. Returns the
-    /// first element if `Ribbon` is at full capacity, since it would be dropped by driving the
-    /// `Ribbon` forward. See [`Band`] for an example of a `Ribbon` with fixed capacity.
+    /// Tries to stream the iterator forward through the `Ribbon` without expanding it. Underlying
+    /// iterator is polled for the next element. Returns the head of the `Ribbon`, and the new item
+    /// from the iterator is appended to the tail.
     ///
-    /// Is a no-op if iterator stops producing values.
-    ///
-    /// [`Band`]: crate::band::Band
+    /// Is a no-op if iterator stops producing values. In that case `None` is returned.
     ///
     /// # Example
     ///
@@ -15,15 +13,16 @@ pub trait Ribbon<T> {
     /// let mut tape = Tape::new(0..10);
     ///
     /// tape.expand_n(5);
-    /// tape.progress(); // tape does not return first element since it can always grow
+    /// let item = tape.progress();
     ///
-    /// assert_eq!(tape.len(), 6);
-    /// assert_eq!(tape.peek_front(), Some(&0));
+    /// assert_eq!(item, Some(0));
+    /// assert_eq!(tape.len(), 5);
+    /// assert_eq!(tape.peek_front(), Some(&1));
     /// assert_eq!(tape.peek_back(), Some(&5));
     /// ```
     fn progress(&mut self) -> Option<T>;
 
-    /// Expands the `Ribbon` by consuming the next available item and appending it to the end.
+    /// Expands the `Ribbon` by consuming the next available item and appending it to the tail.
     ///
     /// # Example
     ///
@@ -42,10 +41,7 @@ pub trait Ribbon<T> {
     /// assert_eq!(tape.peek_front(), Some(&0));
     /// assert_eq!(tape.peek_back(), Some(&1));
     /// ```
-    fn expand(&mut self) {
-        let to_drop = self.progress();
-        drop(to_drop);
-    }
+    fn expand(&mut self);
 
     /// Expands the `Ribbon` by consuming the `n` next available item and appending it to the end.
     ///

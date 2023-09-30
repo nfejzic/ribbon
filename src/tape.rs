@@ -1,3 +1,7 @@
+//! Implementation of dynamically sized data structures that implement the [`Ribbon`] trait.
+//!
+//! [`Ribbon`]: crate::Ribbon
+
 use std::collections::VecDeque;
 
 /// A dynamically sized [`Ribbon`] that can hold varying number of items and can grow and shrink as
@@ -30,11 +34,18 @@ where
     I: Iterator<Item = T>,
 {
     fn progress(&mut self) -> Option<T> {
+        let next = self.iter.next()?;
+
+        let head = self.pop_front();
+        self.tape.push_back(next);
+
+        head
+    }
+
+    fn expand(&mut self) {
         if let Some(item) = self.iter.next() {
             self.tape.push_back(item);
         }
-
-        None
     }
 
     fn pop_front(&mut self) -> Option<T> {
