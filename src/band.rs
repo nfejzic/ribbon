@@ -7,9 +7,11 @@ use crate::{ribbon, Ribbon};
 ///
 /// [`Ribbon`]: crate::Ribbon
 #[derive(Debug)]
-pub struct Band<const N: usize, I, T> {
+pub struct Band<const LEN: usize, I, T> {
     iter: I,
-    tape: [Option<T>; N],
+    tape: [Option<T>; LEN],
+    head: usize,
+    len: usize,
 }
 
 impl<const LEN: usize, I, T> Band<LEN, I, T> {
@@ -20,18 +22,22 @@ impl<const LEN: usize, I, T> Band<LEN, I, T> {
         T: Sized,
     {
         let tape = [0; LEN].map(|_| None);
-        Band { iter, tape }
+
+        Band {
+            iter,
+            tape,
+            head: 0,
+            len: 0,
+        }
     }
 
     /// Shifts all items by 1, returning the head of the `Band`.
     fn slide(&mut self) -> Option<T> {
-        let first = self.tape[0].take();
+        let first = self.tape[self.head].take()?;
 
-        for i in 1..LEN {
-            self.tape[i - 1] = self.tape[i].take();
-        }
+        self.incr_head();
 
-        first
+        Some(first)
     }
 
     /// Checks if the `Band` is at full capacity.
@@ -39,7 +45,15 @@ impl<const LEN: usize, I, T> Band<LEN, I, T> {
     where
         I: Iterator<Item = T>,
     {
-        self.peek_at(LEN - 1).is_some()
+        self.len() == LEN
+    }
+
+    fn incr_head(&mut self) {
+        self.head = (self.head + 1) % LEN;
+    }
+
+    fn tail(&self) -> usize {
+        (self.head + self.len.saturating_sub(1)) % LEN
     }
 }
 
@@ -51,7 +65,8 @@ where
         let next = self.iter.next()?; // do nothing if iterator does not produce
 
         let head = self.slide();
-        self.tape[self.len()] = Some(next);
+
+        self.tape[self.tail()] = Some(next);
         head
     }
 
@@ -61,15 +76,13 @@ where
         if self.is_full() {
             self.slide();
         } else {
-            self.tape[self.len()] = self.iter.next();
+            self.tape[self.len] = self.iter.next();
+            self.len += 1;
         }
     }
 
     fn pop_front(&mut self) -> Option<T> {
-        let first = self.tape[0].take();
-        self.slide();
-
-        first
+        self.slide()
     }
 
     fn peek_front(&self) -> Option<&T> {
@@ -77,8 +90,9 @@ where
     }
 
     fn pop_back(&mut self) -> Option<T> {
-        let idx = self.len().saturating_sub(1);
-        self.tape[idx].take()
+        let back = self.tape[self.tail()].take()?;
+        self.len -= 1;
+        Some(back)
     }
 
     fn peek_back(&self) -> Option<&T> {
@@ -87,11 +101,16 @@ where
     }
 
     fn peek_at(&self, index: usize) -> Option<&T> {
-        self.tape.get(index)?.as_ref()
+        if index >= LEN {
+            return None;
+        }
+
+        let idx = (self.head + index) % LEN;
+        self.tape.get(idx)?.as_ref()
     }
 
     fn len(&self) -> usize {
-        self.tape.iter().position(|x| x.is_none()).unwrap_or(LEN)
+        self.len
     }
 }
 
@@ -126,7 +145,6 @@ mod tests {
         band.expand_n(5);
 
         assert_eq!(band.pop_front(), Some(0));
-        dbg!(&band);
         assert_eq!(band.pop_front(), Some(1));
         assert_eq!(band.pop_front(), Some(2));
         assert_eq!(band.pop_front(), Some(3));
@@ -137,9 +155,12 @@ mod tests {
     #[test]
     fn pops_back() {
         let mut band: Band<5, _, _> = Band::new(0u32..10u32);
+        dbg!(&band);
         band.expand_n(5);
+        dbg!(&band);
 
         assert_eq!(band.pop_back(), Some(4));
+        dbg!(&band);
         assert_eq!(band.pop_back(), Some(3));
         assert_eq!(band.pop_back(), Some(2));
         assert_eq!(band.pop_back(), Some(1));
