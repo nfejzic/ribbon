@@ -42,6 +42,7 @@ assert_eq!(tape.peek_back(), Some(&4));
 
 ```rust
 use ribbon::Band;
+use ribbon::Ribbon;
 
 // Band with capacity for 5 items
 let mut band: Band<3, _, _> = Band::new(0..4);
@@ -51,13 +52,10 @@ assert_eq!(band.len(), 2);
 assert_eq!(band.peek_front(), Some(&0));
 assert_eq!(band.peek_back(), Some(&1));
 
-// just expands, no need to pop first item
-assert_eq!(band.progress(), None); // consume 3 from iterator
+// "slides" over the items from iterator -> returns first and expands by 1
+assert_eq!(band.progress(), Some(0)); // consume 3 from iterator
+assert_eq!(band.progress(), Some(1)); // consumes 4 from iterator, iterator has no more values
 
-// needs space, pops first item
-assert_eq!(band.progress(), Some(0)); // consumes 4 from iterator, iterator has no more values
-
-// iterator does not produce more values, progress becomes no-op. No extra capacity is needed,
-// hence progress does not return any more values.
+// iterator does not produce more values, progress becomes no-op.
 assert_eq!(band.progress(), None);
 ```
