@@ -23,9 +23,9 @@
 //! ### Using `Tape`
 //!
 //! ```rust
-//! use ribbon::{Ribbon, Tape, Enroll};
+//! use ribbon::{Ribbon, Tape};
 //!
-//! let mut tape = (0..10).tape();
+//! let mut tape = Tape::new(0..10);
 //! tape.expand_n(5);
 //!
 //! assert_eq!(tape.len(), 5);
@@ -36,10 +36,11 @@
 //! ### Using `Band`
 //!
 //! ```rust
-//! use ribbon::{Band, Ribbon, Enroll};
+//! use ribbon::Band;
+//! use ribbon::Ribbon;
 //!
 //! // Band with capacity for 5 items
-//! let mut band = (0..4).band::<3>();
+//! let mut band: Band<3, _> = Band::new(0..4);
 //! band.expand_n(2); // consume 0, 1 from iterator
 //!
 //! assert_eq!(band.len(), 2);

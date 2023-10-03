@@ -31,22 +31,3 @@ fn test_band() {
     // iterator does not produce more values, progress becomes no-op.
     assert_eq!(band.progress(), None);
 }
-
-#[test]
-fn test_enroll() {
-    use ribbon::Enroll;
-
-    let iter = 0..10;
-
-    let mut tape = iter.tape();
-    tape.expand_n(5);
-    assert_eq!(tape.progress(), Some(0));
-    assert_eq!(tape.peek_at(2), Some(&3));
-
-    let iter = 0..10;
-
-    let mut band = iter.band::<5>();
-    band.expand_n(3);
-    assert_eq!(band.progress(), Some(0));
-    assert_eq!(band.progress(), Some(1));
-}

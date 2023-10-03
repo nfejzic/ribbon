@@ -28,7 +28,7 @@ where
     {
         let tape = [0; LEN].map(|_| None);
 
-        Band::<LEN, I> {
+        Band {
             iter,
             tape,
             head: 0,
