@@ -7,24 +7,19 @@ use crate::{ribbon, Ribbon};
 ///
 /// [`Ribbon`]: crate::Ribbon
 #[derive(Debug)]
-pub struct Band<const LEN: usize, I>
-where
-    I: Iterator,
-{
+pub struct Band<const LEN: usize, I, T> {
     iter: I,
-    tape: [Option<I::Item>; LEN],
+    tape: [Option<T>; LEN],
     head: usize,
     len: usize,
 }
 
-impl<const LEN: usize, I> Band<LEN, I>
-where
-    I: Iterator,
-{
+impl<const LEN: usize, I, T> Band<LEN, I, T> {
     /// Creates a new `Tape` from the given iterator.
-    pub fn new(iter: I) -> Band<LEN, I>
+    pub fn new(iter: I) -> Band<LEN, I, T>
     where
-        I: Iterator,
+        I: Iterator<Item = T>,
+        T: Sized,
     {
         let tape = [0; LEN].map(|_| None);
 
@@ -37,7 +32,7 @@ where
     }
 
     /// Shifts all items by 1, returning the head of the `Band`.
-    fn slide(&mut self) -> Option<I::Item> {
+    fn slide(&mut self) -> Option<T> {
         let first = self.tape[self.head].take()?;
 
         self.incr_head();
@@ -46,7 +41,10 @@ where
     }
 
     /// Checks if the `Band` is at full capacity.
-    fn is_full(&self) -> bool {
+    fn is_full(&self) -> bool
+    where
+        I: Iterator<Item = T>,
+    {
         self.len() == LEN
     }
 
@@ -59,11 +57,11 @@ where
     }
 }
 
-impl<const LEN: usize, I> ribbon::Ribbon<I::Item> for Band<LEN, I>
+impl<const LEN: usize, I, T> ribbon::Ribbon<T> for Band<LEN, I, T>
 where
-    I: Iterator,
+    I: Iterator<Item = T>,
 {
-    fn progress(&mut self) -> Option<I::Item> {
+    fn progress(&mut self) -> Option<T> {
         let next = self.iter.next()?; // do nothing if iterator does not produce
 
         let head = self.slide();
@@ -83,26 +81,26 @@ where
         }
     }
 
-    fn pop_front(&mut self) -> Option<I::Item> {
+    fn pop_front(&mut self) -> Option<T> {
         self.slide()
     }
 
-    fn peek_front(&self) -> Option<&I::Item> {
+    fn peek_front(&self) -> Option<&T> {
         self.peek_at(0)
     }
 
-    fn pop_back(&mut self) -> Option<I::Item> {
+    fn pop_back(&mut self) -> Option<T> {
         let back = self.tape[self.tail()].take()?;
         self.len -= 1;
         Some(back)
     }
 
-    fn peek_back(&self) -> Option<&I::Item> {
+    fn peek_back(&self) -> Option<&T> {
         let idx = self.len().saturating_sub(1);
         self.peek_at(idx)
     }
 
-    fn peek_at(&self, index: usize) -> Option<&I::Item> {
+    fn peek_at(&self, index: usize) -> Option<&T> {
         if index >= LEN {
             return None;
         }
@@ -123,7 +121,7 @@ mod tests {
 
     #[test]
     fn expands() {
-        let mut band: Band<5, _> = Band::new(0u32..10u32);
+        let mut band: Band<5, _, _> = Band::new(0u32..10u32);
 
         assert_eq!(band.peek_front(), None);
         assert_eq!(band.peek_back(), None);
@@ -143,7 +141,7 @@ mod tests {
 
     #[test]
     fn pops_front() {
-        let mut band: Band<5, _> = Band::new(0u32..10u32);
+        let mut band: Band<5, _, _> = Band::new(0u32..10u32);
         band.expand_n(5);
 
         assert_eq!(band.pop_front(), Some(0));
@@ -156,7 +154,7 @@ mod tests {
 
     #[test]
     fn pops_back() {
-        let mut band: Band<5, _> = Band::new(0u32..10u32);
+        let mut band: Band<5, _, _> = Band::new(0u32..10u32);
         dbg!(&band);
         band.expand_n(5);
         dbg!(&band);
@@ -172,7 +170,7 @@ mod tests {
 
     #[test]
     fn peeks_at() {
-        let mut band: Band<5, _> = Band::new(0u32..10u32);
+        let mut band: Band<5, _, _> = Band::new(0u32..10u32);
         band.expand_n(5);
 
         assert_eq!(band.peek_at(0), Some(&0));
@@ -185,7 +183,7 @@ mod tests {
 
     #[test]
     fn len_correct() {
-        let mut band: Band<5, _> = Band::new(0u32..10u32);
+        let mut band: Band<5, _, _> = Band::new(0u32..10u32);
         band.expand_n(5);
 
         assert_eq!(band.len(), 5);
@@ -208,7 +206,7 @@ mod tests {
 
     #[test]
     fn makes_progress() {
-        let mut band: Band<5, _> = Band::new(0u32..5u32);
+        let mut band: Band<5, _, _> = Band::new(0u32..5u32);
 
         // band was empty, first progress has nothing to return
         assert_eq!(band.progress(), None);

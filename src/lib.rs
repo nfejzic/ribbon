@@ -40,7 +40,7 @@
 //! use ribbon::Ribbon;
 //!
 //! // Band with capacity for 5 items
-//! let mut band: Band<3, _> = Band::new(0..4);
+//! let mut band: Band<3, _, _> = Band::new(0..4);
 //! band.expand_n(2); // consume 0, 1 from iterator
 //!
 //! assert_eq!(band.len(), 2);
