@@ -11,16 +11,22 @@ use std::collections::VecDeque;
 /// [`VecDeque`]: std::collections::VecDeque
 /// [`Ribbon`]: crate::Ribbon
 #[derive(Debug)]
-pub struct Tape<I, T> {
+pub struct Tape<I>
+where
+    I: Iterator,
+{
     iter: I,
-    tape: VecDeque<T>,
+    tape: VecDeque<I::Item>,
 }
 
-impl<I, T> Tape<I, T> {
+impl<I> Tape<I>
+where
+    I: Iterator,
+{
     /// Creates a new `Tape` from the given iterator.
-    pub fn new(iter: I) -> Tape<I, T>
+    pub fn new(iter: I) -> Tape<I>
     where
-        I: Iterator<Item = T>,
+        I: Iterator,
     {
         Tape {
             iter,
@@ -29,11 +35,11 @@ impl<I, T> Tape<I, T> {
     }
 }
 
-impl<I, T> super::ribbon::Ribbon<T> for Tape<I, T>
+impl<I> super::ribbon::Ribbon<I::Item> for Tape<I>
 where
-    I: Iterator<Item = T>,
+    I: Iterator,
 {
-    fn progress(&mut self) -> Option<T> {
+    fn progress(&mut self) -> Option<I::Item> {
         let next = self.iter.next()?;
 
         let head = self.pop_front();
@@ -48,23 +54,23 @@ where
         }
     }
 
-    fn pop_front(&mut self) -> Option<T> {
+    fn pop_front(&mut self) -> Option<I::Item> {
         self.tape.pop_front()
     }
 
-    fn peek_front(&self) -> Option<&T> {
+    fn peek_front(&self) -> Option<&I::Item> {
         self.tape.front()
     }
 
-    fn pop_back(&mut self) -> Option<T> {
+    fn pop_back(&mut self) -> Option<I::Item> {
         self.tape.pop_back()
     }
 
-    fn peek_back(&self) -> Option<&T> {
+    fn peek_back(&self) -> Option<&I::Item> {
         self.tape.back()
     }
 
-    fn peek_at(&self, index: usize) -> Option<&T> {
+    fn peek_at(&self, index: usize) -> Option<&I::Item> {
         self.tape.get(index)
     }
 
