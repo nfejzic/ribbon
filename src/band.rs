@@ -41,6 +41,7 @@ where
         let first = self.tape[self.head].take()?;
 
         self.incr_head();
+        self.len = self.len.saturating_sub(1);
 
         Some(first)
     }
@@ -67,6 +68,7 @@ where
         let next = self.iter.next()?; // do nothing if iterator does not produce
 
         let head = self.slide();
+        self.len += 1;
 
         self.tape[self.tail()] = Some(next);
         head
@@ -116,10 +118,34 @@ where
     }
 }
 
+impl<const LEN: usize, I> Iterator for Band<LEN, I>
+where
+    I: Iterator,
+{
+    type Item = I::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.is_empty() {
+            self.expand_n(LEN);
+        }
+
+        self.pop_front()
+    }
+}
+
+impl<const LEN: usize, I> From<I> for Band<LEN, I>
+where
+    I: Iterator,
+{
+    fn from(value: I) -> Self {
+        Band::new(value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Band;
-    use crate::ribbon::Ribbon;
+    use crate::{ribbon::Ribbon, Enroll};
 
     #[test]
     fn expands() {
@@ -222,5 +248,17 @@ mod tests {
 
         // iterator does not produce more values, so progress does not drop anything
         assert_eq!(band.progress(), None);
+    }
+
+    #[test]
+    fn is_iterator() {
+        let mut band = (0..10).band::<5>();
+
+        assert_eq!(band.next(), Some(0));
+        assert_eq!(band.next(), Some(1));
+        assert_eq!(band.next(), Some(2));
+        assert_eq!(band.next(), Some(3));
+        assert_eq!(band.next(), Some(4));
+        assert_eq!(band.next(), Some(5));
     }
 }
