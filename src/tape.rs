@@ -12,7 +12,7 @@ use crate::Ribbon;
 ///
 /// [`VecDeque`]: std::collections::VecDeque
 /// [`Ribbon`]: crate::Ribbon
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Tape<I>
 where
     I: Iterator,
@@ -114,6 +114,19 @@ where
         }
 
         self.pop_front()
+    }
+}
+
+impl<I> Clone for Tape<I>
+where
+    I: Iterator + Clone,
+    I::Item: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            iter: self.iter.clone(),
+            tape: self.tape.clone(),
+        }
     }
 }
 

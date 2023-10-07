@@ -7,7 +7,7 @@ use crate::{ribbon, Ribbon};
 /// moment.
 ///
 /// [`Ribbon`]: crate::Ribbon
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Band<const LEN: usize, I>
 where
     I: Iterator,
@@ -159,6 +159,21 @@ where
 {
     fn from(value: I) -> Self {
         Band::new(value)
+    }
+}
+
+impl<const LEN: usize, I> Clone for Band<LEN, I>
+where
+    I: Iterator + Clone,
+    I::Item: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            iter: self.iter.clone(),
+            tape: self.tape.clone(),
+            head: self.head,
+            len: self.len,
+        }
     }
 }
 
