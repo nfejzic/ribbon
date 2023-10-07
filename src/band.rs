@@ -93,7 +93,7 @@ where
             return true;
         }
 
-        return false;
+        false
     }
 
     fn expand_while<F>(&mut self, f: F) -> bool
