@@ -87,8 +87,8 @@ pub trait Ribbon<T> {
     /// ```
     fn pop_front(&mut self) -> Option<T>;
 
-    /// Returns a reference to the item stored at the head of `Ribbon` and returns it (if
-    /// available).
+    /// Returns a reference to the item stored at the head of `Ribbon` if item exists. Returns
+    /// `None` otherwise.
     ///
     /// # Example
     ///
@@ -106,7 +106,25 @@ pub trait Ribbon<T> {
         self.peek_at(0)
     }
 
-    /// Removes the item stored at the tail of `Ribbon` and returns it (if available).
+    /// Returns a mutable reference to the item stored at the head of `Ribbon` if item exists.
+    /// Returns `None` otherwise.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use ribbon::{Ribbon, Tape};
+    ///
+    /// let mut tape = Tape::new(0..10);
+    ///
+    /// tape.expand_n(2);
+    /// assert_eq!(tape.len(), 2);
+    /// assert_eq!(tape.peek_front(), Some(&0));
+    /// assert_eq!(tape.len(), 2);
+    /// ```
+    fn peek_front_mut(&mut self) -> Option<&mut T>;
+
+    /// Removes the item stored at the tail of `Ribbon` and returns it if it exists. Returns `None`
+    /// otherwise.
     ///
     /// # Example
     ///
@@ -124,8 +142,8 @@ pub trait Ribbon<T> {
     /// ```
     fn pop_back(&mut self) -> Option<T>;
 
-    /// Returns a reference to the item stored at the tail of `Ribbon` and returns it (if
-    /// available).
+    /// Returns a reference to the item stored at the tail of `Ribbon` if item exists. Returns
+    /// `None` otherwise.
     ///
     /// # Example
     ///
@@ -148,8 +166,33 @@ pub trait Ribbon<T> {
         self.peek_at(self.len() - 1)
     }
 
-    /// Returns a reference to the item stored at the given index of `Ribbon` and returns it (if
-    /// available). Returns `None` if index out of bounds.
+    /// Returns a mutable reference to the item stored at the tail of `Ribbon` if item exists.
+    /// Returns `None` otherwise.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use ribbon::{Ribbon, Tape};
+    ///
+    /// let mut tape = Tape::new(0..10);
+    ///
+    /// tape.expand_n(3);
+    /// assert_eq!(tape.len(), 3);
+    /// assert_eq!(tape.peek_back(), Some(&2));
+    ///
+    /// if let Some(item) = tape.peek_back_mut() { *item = 42; }
+    /// assert_eq!(tape.peek_back(), Some(&42));
+    ///
+    /// tape.expand();
+    /// assert_eq!(tape.peek_back(), Some(&3));
+    ///
+    /// tape.expand();
+    /// assert_eq!(tape.peek_back(), Some(&4));
+    /// ```
+    fn peek_back_mut(&mut self) -> Option<&mut T>;
+
+    /// Returns a reference to the item stored at the given index of `Ribbon` if item exists.
+    /// Returns `None` if index out of bounds.
     ///
     /// # Example
     ///
@@ -165,6 +208,27 @@ pub trait Ribbon<T> {
     /// assert_eq!(tape.peek_at(3), Some(&3));
     /// ```
     fn peek_at(&self, index: usize) -> Option<&T>;
+
+    /// Returns a mutable reference to the item stored at the given index of `Ribbon` if item
+    /// exists. Returns None otherwise, or if index out of bounds.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use ribbon::{Ribbon, Tape};
+    ///
+    /// let mut tape = Tape::new(0..10);
+    ///
+    /// tape.expand_n(5);
+    /// assert_eq!(tape.len(), 5);
+    /// assert_eq!(tape.peek_at(0), Some(&0));
+    ///
+    /// if let Some(item) = tape.peek_at_mut(0) { *item = 42; }
+    ///
+    /// assert_eq!(tape.peek_at(0), Some(&42));
+    /// assert_eq!(tape.peek_at(3), Some(&3));
+    /// ```
+    fn peek_at_mut(&mut self, index: usize) -> Option<&mut T>;
 
     /// Returns the number of items currently found on the `Ribbon`.
     ///

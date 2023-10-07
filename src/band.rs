@@ -97,6 +97,10 @@ where
         self.peek_at(0)
     }
 
+    fn peek_front_mut(&mut self) -> Option<&mut I::Item> {
+        self.peek_at_mut(0)
+    }
+
     fn pop_back(&mut self) -> Option<I::Item> {
         let back = self.tape[self.tail()].take()?;
         self.len -= 1;
@@ -104,8 +108,11 @@ where
     }
 
     fn peek_back(&self) -> Option<&I::Item> {
-        let idx = self.len().saturating_sub(1);
-        self.peek_at(idx)
+        self.peek_at(self.tail())
+    }
+
+    fn peek_back_mut(&mut self) -> Option<&mut I::Item> {
+        self.peek_at_mut(self.tail())
     }
 
     fn peek_at(&self, index: usize) -> Option<&I::Item> {
@@ -115,6 +122,15 @@ where
 
         let idx = (self.head + index) % LEN;
         self.tape.get(idx)?.as_ref()
+    }
+
+    fn peek_at_mut(&mut self, index: usize) -> Option<&mut I::Item> {
+        if index >= LEN {
+            return None;
+        }
+
+        let idx = (self.head + index) % LEN;
+        self.tape.get_mut(idx)?.as_mut()
     }
 
     fn len(&self) -> usize {
@@ -252,6 +268,23 @@ mod tests {
 
         // iterator does not produce more values, so progress does not drop anything
         assert_eq!(band.progress(), None);
+    }
+
+    #[test]
+    fn peek_back() {
+        let mut band = (0..10).band::<5>();
+
+        assert_eq!(band.len(), 0);
+        band.expand_n(5);
+
+        assert_eq!(band.len(), 5);
+        assert_eq!(band.peek_back(), Some(&4));
+
+        if let Some(item) = band.peek_back_mut() {
+            *item = 42;
+        }
+
+        assert_eq!(band.peek_back(), Some(&42));
     }
 
     #[test]

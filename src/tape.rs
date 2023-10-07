@@ -64,6 +64,10 @@ where
         self.tape.front()
     }
 
+    fn peek_front_mut(&mut self) -> Option<&mut I::Item> {
+        self.tape.front_mut()
+    }
+
     fn pop_back(&mut self) -> Option<I::Item> {
         self.tape.pop_back()
     }
@@ -72,8 +76,16 @@ where
         self.tape.back()
     }
 
+    fn peek_back_mut(&mut self) -> Option<&mut I::Item> {
+        self.tape.back_mut()
+    }
+
     fn peek_at(&self, index: usize) -> Option<&I::Item> {
         self.tape.get(index)
+    }
+
+    fn peek_at_mut(&mut self, index: usize) -> Option<&mut I::Item> {
+        self.tape.get_mut(index)
     }
 
     fn len(&self) -> usize {
