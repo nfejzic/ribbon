@@ -187,4 +187,17 @@ mod tests {
         tape.pop_back();
         assert_eq!(tape.len(), 0);
     }
+
+    #[test]
+    fn is_iterator() {
+        let mut tape = Tape::from(0..5);
+
+        assert_eq!(tape.len(), 0);
+        assert_eq!(tape.next(), Some(0));
+        assert_eq!(tape.next(), Some(1));
+        assert_eq!(tape.next(), Some(2));
+        assert_eq!(tape.next(), Some(3));
+        assert_eq!(tape.next(), Some(4));
+        assert_eq!(tape.next(), None);
+    }
 }
