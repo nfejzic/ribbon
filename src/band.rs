@@ -1,5 +1,7 @@
 //! Implementation of statically sized data structures that implement the [`Ribbon`] trait.
 
+use std::iter::Peekable;
+
 use crate::{ribbon, Ribbon};
 
 /// A fix-sized [`Ribbon`] backed up by an array of `N` elements. It cannot grow over the given
@@ -7,12 +9,12 @@ use crate::{ribbon, Ribbon};
 /// moment.
 ///
 /// [`Ribbon`]: crate::Ribbon
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug)]
 pub struct Band<const LEN: usize, I>
 where
     I: Iterator,
 {
-    iter: I,
+    iter: Peekable<I>,
     tape: [Option<I::Item>; LEN],
     head: usize,
     len: usize,
@@ -27,7 +29,7 @@ where
         let tape = [0; LEN].map(|_| None);
 
         Band {
-            iter,
+            iter: iter.peekable(),
             tape,
             head: 0,
             len: 0,
@@ -80,13 +82,37 @@ where
 
     /// Expands the `Band` by consuming the next available item and appending it to the end.
     /// Drops the first element if the `Band` is already at full capacity.
-    fn expand(&mut self) {
+    fn expand(&mut self) -> bool {
         if self.is_full() {
             self.slide();
-        } else {
-            self.tape[self.len] = self.iter.next();
-            self.len += 1;
         }
+
+        if let Some(item) = self.iter.next() {
+            self.tape[self.len] = Some(item);
+            self.len += 1;
+            return true;
+        }
+
+        return false;
+    }
+
+    fn expand_while<F>(&mut self, f: F) -> bool
+    where
+        F: Fn(&I::Item) -> bool,
+    {
+        let mut expanded = false;
+        loop {
+            match self.iter.peek() {
+                Some(item) if f(item) => {
+                    expanded = true;
+
+                    self.expand();
+                }
+                _ => break,
+            }
+        }
+
+        expanded
     }
 
     fn pop_front(&mut self) -> Option<I::Item> {

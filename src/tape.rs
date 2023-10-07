@@ -2,7 +2,7 @@
 //!
 //! [`Ribbon`]: crate::Ribbon
 
-use std::collections::VecDeque;
+use std::{collections::VecDeque, iter::Peekable};
 
 use crate::Ribbon;
 
@@ -12,12 +12,12 @@ use crate::Ribbon;
 ///
 /// [`VecDeque`]: std::collections::VecDeque
 /// [`Ribbon`]: crate::Ribbon
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug)]
 pub struct Tape<I>
 where
     I: Iterator,
 {
-    iter: I,
+    iter: Peekable<I>,
     tape: VecDeque<I::Item>,
 }
 
@@ -31,7 +31,7 @@ where
         I: Iterator,
     {
         Tape {
-            iter,
+            iter: iter.peekable(),
             tape: VecDeque::new(),
         }
     }
@@ -50,10 +50,32 @@ where
         head
     }
 
-    fn expand(&mut self) {
+    fn expand(&mut self) -> bool {
         if let Some(item) = self.iter.next() {
             self.tape.push_back(item);
+            true
+        } else {
+            false
         }
+    }
+
+    fn expand_while<F>(&mut self, f: F) -> bool
+    where
+        F: Fn(&I::Item) -> bool,
+    {
+        let mut expanded = false;
+
+        loop {
+            match self.iter.peek() {
+                Some(item) if f(item) => {
+                    expanded = true;
+                    self.expand();
+                }
+                _ => break,
+            }
+        }
+
+        expanded
     }
 
     fn pop_front(&mut self) -> Option<I::Item> {

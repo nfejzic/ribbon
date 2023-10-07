@@ -25,27 +25,32 @@ pub trait Ribbon<T> {
     fn progress(&mut self) -> Option<T>;
 
     /// Expands the `Ribbon` by consuming the next available item and appending it to the tail.
+    /// Returns `true` if `Ribbon` is expanded.
     ///
     /// # Example
     ///
     ///```
     /// use ribbon::{Ribbon, Tape};
     ///
-    /// let mut tape = Tape::new(0..10);
+    /// let mut tape = Tape::new(0..2);
     ///
-    /// tape.expand();
+    /// assert!(tape.expand());
     /// assert_eq!(tape.len(), 1);
     /// assert_eq!(tape.peek_front(), Some(&0));
     /// assert_eq!(tape.peek_back(), Some(&0));
     ///
-    /// tape.expand();
+    /// assert!(tape.expand());
     /// assert_eq!(tape.len(), 2);
     /// assert_eq!(tape.peek_front(), Some(&0));
     /// assert_eq!(tape.peek_back(), Some(&1));
+    ///
+    /// // no more elements, expansion fails
+    /// assert_eq!(tape.expand(), false);
     /// ```
-    fn expand(&mut self);
+    fn expand(&mut self) -> bool;
 
-    /// Expands the `Ribbon` by consuming the `n` next available item and appending it to the end.
+    /// Expands the `Ribbon` by consuming the `n` next available item and appending them to the end.
+    /// Returns `true` if `Ribbon` is expanded by at least one element.
     ///
     /// # Example
     ///
@@ -54,21 +59,58 @@ pub trait Ribbon<T> {
     ///
     /// let mut tape = Tape::new(0..10);
     ///
-    /// tape.expand_n(5);
+    /// assert!(tape.expand_n(5));
     /// assert_eq!(tape.len(), 5);
     /// assert_eq!(tape.peek_front(), Some(&0));
     /// assert_eq!(tape.peek_back(), Some(&4));
     ///
-    /// tape.expand_n(7);
+    /// assert!(tape.expand_n(7));
     /// assert_eq!(tape.len(), 10);
     /// assert_eq!(tape.peek_front(), Some(&0));
     /// assert_eq!(tape.peek_back(), Some(&9));
+    ///
+    /// // not expanding anymore, returns false
+    /// assert_eq!(tape.expand_n(1), false);
     /// ```
-    fn expand_n(&mut self, n: usize) {
+    fn expand_n(&mut self, n: usize) -> bool {
+        let mut expanded = false;
         for _ in 0..n {
-            self.expand();
+            expanded |= self.expand();
+
+            if !expanded {
+                break;
+            }
         }
+
+        expanded
     }
+
+    /// Expands the `Ribbon` by consuming items from the iterator while some condition holds and
+    /// appending them to the end. Returns `true` if `Ribbon` is expanded by at least one element.
+    ///
+    /// # Example
+    ///
+    ///```
+    /// use ribbon::{Ribbon, Tape};
+    ///
+    /// let mut tape = Tape::new(0..10);
+    ///
+    /// assert!(tape.expand_while(|item| *item < 5));
+    /// assert_eq!(tape.len(), 5);
+    /// assert_eq!(tape.peek_front(), Some(&0));
+    /// assert_eq!(tape.peek_back(), Some(&4));
+    ///
+    /// assert!(tape.expand_while(|item| *item < 6));
+    /// assert_eq!(tape.len(), 6);
+    /// assert_eq!(tape.peek_front(), Some(&0));
+    /// assert_eq!(tape.peek_back(), Some(&5));
+    ///
+    /// // no more elements smaller than 6, expansion fails
+    /// assert_eq!(tape.expand_while(|item| *item < 6), false);
+    /// ```
+    fn expand_while<F>(&mut self, f: F) -> bool
+    where
+        F: Fn(&T) -> bool;
 
     /// Removes the item stored at the head of `Ribbon` and returns it (if available).
     ///
