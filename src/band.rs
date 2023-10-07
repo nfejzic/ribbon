@@ -2,8 +2,9 @@
 
 use crate::{ribbon, Ribbon};
 
-/// A fix-sized [`Ribbon`] backed up by an array of `N` elements. It cannot grow over the given fixed
-/// length, and instead drops and/or returns items if no space is available at the given moment.
+/// A fix-sized [`Ribbon`] backed up by an array of `N` elements. It cannot grow over the given
+/// fixed length, and instead drops and/or returns items if no space is available at the given
+/// moment.
 ///
 /// [`Ribbon`]: crate::Ribbon
 #[derive(Debug)]
@@ -22,13 +23,10 @@ where
     I: Iterator,
 {
     /// Creates a new `Tape` from the given iterator.
-    pub fn new(iter: I) -> Band<LEN, I>
-    where
-        I: Iterator,
-    {
+    pub fn new(iter: I) -> Band<LEN, I> {
         let tape = [0; LEN].map(|_| None);
 
-        Band::<LEN, I> {
+        Band {
             iter,
             tape,
             head: 0,
@@ -37,6 +35,9 @@ where
     }
 
     /// Shifts all items by 1, returning the head of the `Band`.
+    ///
+    /// Shifting is a misnomer, and runs in `O(1)`. Rather than shifting elements, the indices
+    /// pointing to the first and last element are shifted.
     fn slide(&mut self) -> Option<I::Item> {
         let first = self.tape[self.head].take()?;
 
@@ -51,10 +52,13 @@ where
         self.len() == LEN
     }
 
+    /// Moves the head index by 1, wrapping around to the start of inner array when longer than
+    /// `LEN`.
     fn incr_head(&mut self) {
         self.head = (self.head + 1) % LEN;
     }
 
+    /// Calculates the tail index based on head index and length of the `Band`.
     fn tail(&self) -> usize {
         (self.head + self.len.saturating_sub(1)) % LEN
     }
