@@ -1,3 +1,5 @@
+use crate::{Band, Tape};
+
 pub trait Ribbon<T> {
     /// Tries to stream the iterator forward through the `Ribbon` without expanding it. Underlying
     /// iterator is polled for the next element. Returns the head of the `Ribbon`, and the new item
@@ -199,5 +201,45 @@ pub trait Ribbon<T> {
     /// ```
     fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+}
+
+/// Extension trait on types that implement [`Iterator`] trait with convenient functions to convert
+/// the given [`Iterator`] into a [`Band`] or [`Tape`].
+///
+/// [`Band`]: crate::Band
+/// [`Tape`]: crate::Tape
+pub trait Enroll {
+    /// Creates a new [`Band`] from the given Iterator.
+    ///
+    /// [`Band`]: crate::Band
+    fn band<const N: usize>(self) -> crate::Band<N, Self>
+    where
+        Self: Sized + Iterator;
+
+    /// Creates a new [`Tape`] from the given Iterator.
+    ///
+    /// [`Tape`]: crate::Tape
+    fn tape(self) -> crate::Tape<Self>
+    where
+        Self: Sized + Iterator;
+}
+
+impl<I> Enroll for I
+where
+    I: Iterator,
+{
+    fn band<const N: usize>(self) -> Band<N, Self>
+    where
+        Self: Sized + Iterator,
+    {
+        crate::Band::<N, Self>::new(self)
+    }
+
+    fn tape(self) -> Tape<Self>
+    where
+        Self: Sized + Iterator,
+    {
+        crate::Tape::new(self)
     }
 }

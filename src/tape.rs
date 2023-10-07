@@ -4,6 +4,8 @@
 
 use std::collections::VecDeque;
 
+use crate::Ribbon;
+
 /// A dynamically sized [`Ribbon`] that can hold varying number of items and can grow and shrink as
 /// necessary. It is backed up by a [`VecDeque`], and allocates memory on the heap (as is customary by
 /// dynamically sized collections)
@@ -11,16 +13,22 @@ use std::collections::VecDeque;
 /// [`VecDeque`]: std::collections::VecDeque
 /// [`Ribbon`]: crate::Ribbon
 #[derive(Debug)]
-pub struct Tape<I, T> {
+pub struct Tape<I>
+where
+    I: Iterator,
+{
     iter: I,
-    tape: VecDeque<T>,
+    tape: VecDeque<I::Item>,
 }
 
-impl<I, T> Tape<I, T> {
+impl<I> Tape<I>
+where
+    I: Iterator,
+{
     /// Creates a new `Tape` from the given iterator.
-    pub fn new(iter: I) -> Tape<I, T>
+    pub fn new(iter: I) -> Tape<I>
     where
-        I: Iterator<Item = T>,
+        I: Iterator,
     {
         Tape {
             iter,
@@ -29,11 +37,11 @@ impl<I, T> Tape<I, T> {
     }
 }
 
-impl<I, T> super::ribbon::Ribbon<T> for Tape<I, T>
+impl<I> super::ribbon::Ribbon<I::Item> for Tape<I>
 where
-    I: Iterator<Item = T>,
+    I: Iterator,
 {
-    fn progress(&mut self) -> Option<T> {
+    fn progress(&mut self) -> Option<I::Item> {
         let next = self.iter.next()?;
 
         let head = self.pop_front();
@@ -48,28 +56,52 @@ where
         }
     }
 
-    fn pop_front(&mut self) -> Option<T> {
+    fn pop_front(&mut self) -> Option<I::Item> {
         self.tape.pop_front()
     }
 
-    fn peek_front(&self) -> Option<&T> {
+    fn peek_front(&self) -> Option<&I::Item> {
         self.tape.front()
     }
 
-    fn pop_back(&mut self) -> Option<T> {
+    fn pop_back(&mut self) -> Option<I::Item> {
         self.tape.pop_back()
     }
 
-    fn peek_back(&self) -> Option<&T> {
+    fn peek_back(&self) -> Option<&I::Item> {
         self.tape.back()
     }
 
-    fn peek_at(&self, index: usize) -> Option<&T> {
+    fn peek_at(&self, index: usize) -> Option<&I::Item> {
         self.tape.get(index)
     }
 
     fn len(&self) -> usize {
         self.tape.len()
+    }
+}
+
+impl<I> From<I> for Tape<I>
+where
+    I: Iterator,
+{
+    fn from(value: I) -> Self {
+        Tape::new(value)
+    }
+}
+
+impl<I> Iterator for Tape<I>
+where
+    I: Iterator,
+{
+    type Item = I::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.is_empty() {
+            self.expand();
+        }
+
+        self.pop_front()
     }
 }
 
@@ -154,5 +186,18 @@ mod tests {
 
         tape.pop_back();
         assert_eq!(tape.len(), 0);
+    }
+
+    #[test]
+    fn is_iterator() {
+        let mut tape = Tape::from(0..5);
+
+        assert_eq!(tape.len(), 0);
+        assert_eq!(tape.next(), Some(0));
+        assert_eq!(tape.next(), Some(1));
+        assert_eq!(tape.next(), Some(2));
+        assert_eq!(tape.next(), Some(3));
+        assert_eq!(tape.next(), Some(4));
+        assert_eq!(tape.next(), None);
     }
 }

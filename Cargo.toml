@@ -1,6 +1,6 @@
 [package]
 name = "ribbon"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 authors = ["Nadir Fejzic <nadirfejzo@gmail.com>"]
 description = "Tape machine for peeking through windows of iterators."
