@@ -4,6 +4,8 @@
 
 use std::collections::VecDeque;
 
+use crate::Ribbon;
+
 /// A dynamically sized [`Ribbon`] that can hold varying number of items and can grow and shrink as
 /// necessary. It is backed up by a [`VecDeque`], and allocates memory on the heap (as is customary by
 /// dynamically sized collections)
@@ -76,6 +78,30 @@ where
 
     fn len(&self) -> usize {
         self.tape.len()
+    }
+}
+
+impl<I> From<I> for Tape<I>
+where
+    I: Iterator,
+{
+    fn from(value: I) -> Self {
+        Tape::new(value)
+    }
+}
+
+impl<I> Iterator for Tape<I>
+where
+    I: Iterator,
+{
+    type Item = I::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.is_empty() {
+            self.expand();
+        }
+
+        self.pop_front()
     }
 }
 
