@@ -7,8 +7,8 @@ use std::{collections::VecDeque, iter::Peekable};
 use crate::Ribbon;
 
 /// A dynamically sized [`Ribbon`] that can hold varying number of items and can grow and shrink as
-/// necessary. It is backed up by a [`VecDeque`], and allocates memory on the heap (as is customary by
-/// dynamically sized collections)
+/// necessary. It is backed up by a [`VecDeque`], and allocates memory on the heap (as is customary
+/// by dynamically sized collections)
 ///
 /// [`VecDeque`]: std::collections::VecDeque
 /// [`Ribbon`]: crate::Ribbon
